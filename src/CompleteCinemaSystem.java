@@ -57,13 +57,13 @@ public class CompleteCinemaSystem extends JFrame {
             UIManager.put("Button.font", FONT_BOLD);
         } catch(Exception e){}
 
-        // --- LAYOUT STRUCTURE ---
+        // --- 1. SET LAYOUT TO BORDER LAYOUT ---
         setLayout(new BorderLayout());
 
-        // 1. ADD CUSTOM TITLE BAR
+        // --- 2. ADD CUSTOM WINDOW HEADER (Min/Max/Close) ---
         add(createWindowHeader(), BorderLayout.NORTH);
 
-        // 2. ADD MAIN CONTENT AREA
+        // --- 3. ADD MAIN CONTENT PANELS ---
         mainPanel.add(createLoginPanel(), "LOGIN");
         mainPanel.add(createRegisterPanel(), "REGISTER");
         add(mainPanel, BorderLayout.CENTER);
@@ -82,7 +82,7 @@ public class CompleteCinemaSystem extends JFrame {
         title.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         header.add(title, BorderLayout.WEST);
 
-        // Window Controls Panel
+        // Window Controls Panel (Grid 1x3)
         JPanel controls = new JPanel(new GridLayout(1, 3));
         controls.setBackground(COL_HEADER);
 
@@ -99,7 +99,7 @@ public class CompleteCinemaSystem extends JFrame {
             else setExtendedState(JFrame.MAXIMIZED_BOTH);
         });
 
-        // This is the one that was "not working" - explicit exit
+        // EXIT APP
         btnClose.addActionListener(e -> System.exit(0));
 
         controls.add(btnMin);
@@ -120,12 +120,13 @@ public class CompleteCinemaSystem extends JFrame {
         btn.setFocusPainted(false);
         btn.setBackground(COL_HEADER);
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.PLAIN, 14)); // Arial is safer for symbols
-        btn.setPreferredSize(new Dimension(50, 35)); // Slightly wider click area
+        btn.setFont(new Font("Arial", Font.PLAIN, 14));
+        btn.setPreferredSize(new Dimension(50, 35));
 
         btn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
-                btn.setBackground(isClose ? Color.RED : new Color(60, 60, 60));
+                // Red for close, Grey for others
+                btn.setBackground(isClose ? new Color(200, 0, 0) : new Color(60, 60, 60));
             }
             public void mouseExited(MouseEvent e) {
                 btn.setBackground(COL_HEADER);
@@ -469,7 +470,7 @@ public class CompleteCinemaSystem extends JFrame {
         };
         loadData.run();
 
-        // --- SEARCH BAR ---
+        // --- SEARCH BAR (REAL-TIME RESET) ---
         JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchBar.setBackground(COL_BACKGROUND);
         JTextField searchField = createStyledField(); searchField.setColumns(20);
@@ -515,7 +516,7 @@ public class CompleteCinemaSystem extends JFrame {
         browsePanel.add(actions, BorderLayout.SOUTH);
         tabs.addTab("Browse Movies", browsePanel);
 
-        // 2. My Bookings
+        // 2. My Bookings (PRETTIER TICKETS)
         DefaultListModel<String> bookingModel = new DefaultListModel<>();
         JList<String> bookingList = new JList<>(bookingModel);
 
@@ -635,7 +636,25 @@ public class CompleteCinemaSystem extends JFrame {
     private JPanel wrapDashboard(JComponent content, String titleText) {
         JPanel p = new JPanel(new BorderLayout());
 
-        // NO CUSTOM HEADER HERE because we have the main Window Header
+        // CUSTOM HEADER FOR DASHBOARD
+        JPanel top = new JPanel(new BorderLayout());
+        top.setBackground(new Color(10, 10, 10));
+        top.setBorder(new EmptyBorder(15, 20, 15, 20));
+
+        JLabel l = new JLabel(titleText.toUpperCase());
+        l.setForeground(COL_PRIMARY);
+        l.setFont(FONT_HEADER);
+
+        JButton out = createStyledButton("Logout", new Color(60,60,60));
+        out.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        out.setBorder(new EmptyBorder(5, 15, 5, 15));
+
+        out.addActionListener(e -> cardLayout.show(mainPanel, "LOGIN"));
+
+        top.add(l, BorderLayout.WEST);
+        top.add(out, BorderLayout.EAST);
+
+        p.add(top, BorderLayout.NORTH);
         p.add(content, BorderLayout.CENTER);
         return p;
     }
