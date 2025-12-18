@@ -135,8 +135,10 @@ class CinemaData {
 
     private CinemaData() {
         // Seed Data
-        users.add(new Admin("admin", "123"));
-        users.add(new Customer("user", "123"));
+        users.add(UserFactory.create("admin","admin","123"));
+        users.add(UserFactory.create("customer","user","123"));
+     //   users.add(new Admin("admin", "123"));
+       // users.add(new Customer("user", "123"));
 
         Hall h1 = new Hall("Hall A", 20); // Small hall
         Hall h2 = new Hall("IMAX Hall", 50); // Large hall
@@ -178,5 +180,17 @@ class Customer extends User {
     List<String> bookings = new ArrayList<>();
     public Customer(String u, String p) { super(u, p); }
     @Override public String getRole() { return "CUSTOMER"; }
+}
+
+
+
+class UserFactory {
+    public static User create(String role, String u, String p) {
+        switch (role.toUpperCase()) {
+            case "ADMIN": return new Admin(u, p);
+            case "CUSTOMER": return new Customer(u, p);
+            default: throw new IllegalArgumentException("Invalid role");
+        }
+    }
 }
 

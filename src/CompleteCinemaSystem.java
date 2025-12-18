@@ -600,7 +600,6 @@ public class CompleteCinemaSystem extends JFrame {
         PaymentStrategy ps = (type == 0) ? new CreditCardStrategy("1234") : new CashStrategy();
         if(ps.pay(total)) {
             m.getBookedSeats().addAll(seats);
-            ((Customer)currentUser).bookings.add(m.getTitle() + " " + seats + " (" + ps + ")");
             JOptionPane.showMessageDialog(this, "Booked!");
         }
     }
