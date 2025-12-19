@@ -133,24 +133,38 @@ class CinemaData {
     private List<Movie> movies = new ArrayList<>();
     private List<Hall> halls = new ArrayList<>();
 
+    // --- NEW: Observer List ---
+    private List<BookingObserver> observers = new ArrayList<>();
+
     private CinemaData() {
         // Seed Data
         users.add(UserFactory.create("admin","admin","123"));
         users.add(UserFactory.create("customer","user","123"));
-     //   users.add(new Admin("admin", "123"));
-       // users.add(new Customer("user", "123"));
 
-        Hall h1 = new Hall("Hall A", 20); // Small hall
-        Hall h2 = new Hall("IMAX Hall", 50); // Large hall
+        Hall h1 = new Hall("Hall A", 20);
+        Hall h2 = new Hall("IMAX Hall", 50);
         halls.add(h1); halls.add(h2);
 
         movies.add(new Movie.MovieBuilder("Inception").setGenre("Sci-Fi").setLanguage("English").setPrice(12).setShowtime("18:00").setHall(h1).build());
         movies.add(new Movie.MovieBuilder("Parasite").setGenre("Thriller").setLanguage("Korean").setPrice(10).setShowtime("20:00").setHall(h2).build());
+
+        // --- NEW: Register Observers automatically ---
+        addObserver(new EmailService());
+        addObserver(new RevenueLogger());
     }
 
     public static CinemaData getInstance() {
         if (instance == null) instance = new CinemaData();
         return instance;
+    }
+
+    // --- NEW: Observer Methods ---
+    public void addObserver(BookingObserver o) { observers.add(o); }
+
+    public void notifyObservers(String user, String title) {
+        for(BookingObserver o : observers) {
+            o.onBookingSuccess(user, title);
+        }
     }
 
     public User login(String u, String p) {
@@ -193,4 +207,99 @@ class UserFactory {
         }
     }
 }
+
+
+
+
+// 1. Base Component Interface
+interface Ticket {
+    String getDescription();
+    double getCost();
+}
+
+// 2. Concrete Component (The basic movie ticket)
+class MovieTicket implements Ticket {
+    private Movie movie;
+
+    public MovieTicket(Movie movie) {
+        this.movie = movie;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Ticket: " + movie.getTitle();
+    }
+
+    @Override
+    public double getCost() {
+        return movie.getPrice();
+    }
+}
+
+// 3. Abstract Decorator
+abstract class TicketDecorator implements Ticket {
+    protected Ticket tempTicket;
+
+    public TicketDecorator(Ticket ticket) {
+        this.tempTicket = ticket;
+    }
+
+    public String getDescription() {
+        return tempTicket.getDescription();
+    }
+
+    public double getCost() {
+        return tempTicket.getCost();
+    }
+}
+
+// 4. Concrete Decorators (Add-ons)
+class Popcorn extends TicketDecorator {
+    public Popcorn(Ticket ticket) { super(ticket); }
+
+    @Override
+    public String getDescription() { return tempTicket.getDescription() + ", Popcorn"; }
+
+    @Override
+    public double getCost() { return tempTicket.getCost() + 8.0; } // Popcorn costs 8
+}
+
+class Soda extends TicketDecorator {
+    public Soda(Ticket ticket) { super(ticket); }
+
+    @Override
+    public String getDescription() { return tempTicket.getDescription() + ", Soda"; }
+
+    @Override
+    public double getCost() { return tempTicket.getCost() + 4.0; } // Soda costs 4
+}
+
+
+
+
+// ==========================================
+// 5. PATTERN: OBSERVER (Notifications)
+// ==========================================
+
+// The Listener Interface
+interface BookingObserver {
+    void onBookingSuccess(String username, String movieTitle);
+}
+
+// Observer 1: Simulates sending an email
+class EmailService implements BookingObserver {
+    @Override
+    public void onBookingSuccess(String username, String movieTitle) {
+        System.out.println("📧 [EMAIL SENT] To: " + username + " | Ticket: " + movieTitle);
+    }
+}
+
+// Observer 2: Simulates logging for the admin
+class RevenueLogger implements BookingObserver {
+    @Override
+    public void onBookingSuccess(String username, String movieTitle) {
+        System.out.println("💰 [ADMIN LOG] New Sale recorded for '" + movieTitle + "'");
+    }
+}
+
 
